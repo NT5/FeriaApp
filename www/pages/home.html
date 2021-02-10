@@ -1,0 +1,186 @@
+<template>
+    <div class="page">
+        <div class="navbar">
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href="/panel-component/" class="link">
+                        <i class="icon f7-icons if-not-md">menu</i>
+                        <i class="icon material-icons md-only">menu</i>
+                    </a>
+                </div>
+                <div class="title">Feria UML 2019</div>
+                <div class="right">
+                    <a class="link icon-only searchbar-enable" data-searchbar=".searchbar-components">
+                        <i class="icon f7-icons if-not-md">search</i>
+                        <i class="icon material-icons md-only">search</i>
+                    </a>
+                </div>
+                <form class="searchbar searchbar-expandable searchbar-components">
+                    <div class="searchbar-inner">
+                        <div class="searchbar-input-wrap">
+                            <input type="search" placeholder="Buscar" />
+                            <i class="searchbar-icon"></i>
+                            <span class="input-clear-button"></span>
+                        </div>
+                        <span class="searchbar-disable-button if-not-aurora">Cancel</span>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {{#js_if "this.user.type === this.userEnum.JURADO && this.user.categoria"}}
+        <div class="fab fab-right-bottom color-green">
+            {{#with user.categoria}}
+            <a href="/proyectos/{{id}}/{{nombre}}">
+                <i class="material-icons">flag</i>
+            </a>
+            {{/with}}
+        </div>
+        {{/js_if}}
+        <div class="page-content ptr-content-home">
+            <div class="ptr-preloader">
+                <div class="preloader"></div>
+                <div class="ptr-arrow"></div>
+            </div>
+            <div class="searchbar-backdrop"></div>
+            <div class="block searchbar-hide-on-search">
+                <div class="imgFeria">
+                    <img src="img/FeriaBanner2019.webp">
+                </div>
+            </div>
+            <div class="block searchbar-not-found">
+                <div class="block-inner">
+                    <div class="valign-center">
+                        <i class="material-icons">priority_high</i>
+                        No se encontro nada :(
+                    </div>
+                    <br>
+                    ¡Intenta buscar el el nombre de un proyecto!
+                </div>
+            </div>
+            <div class="list searchbar-found" style="z-index: unset !important;">
+                <ul>
+                    {{#each listaProyectos}}
+                    <li class="item_card" data-proyectoId="{{id}}">
+                        <div class="card card-expandable">
+                            <div class="card-content">
+                                <div class="{{randomColorName "bg-color"}}" style="min-height: 300px;">
+                                    <div class="card-header text-color-white display-block">
+                                        <div class="contImg card-opened-fade-in">
+                                            <img src="img/logouml.webp" alt="logoCard" class='logoCard'>
+                                        </div>
+                                        <button class="button button-small color-white"
+                                            style="position: absolute; right: 45px; top: 15px; width: 75px;"
+                                            @click="like({{id}})">
+                                            <i class="icon material-icons">favorite
+                                                <span class="badge color-red" style="margin-left: 0.5px;">
+                                                    {{likes}}
+                                                </span>
+                                            </i>
+                                        </button>
+                                        <span class="card-title">{{nombre}}</span>
+                                        <br>
+                                        <small style="opacity: 0.7">
+                                            <i class="material-icons">school</i> {{user.nombre}}
+                                            <br>
+                                            {{carrera.nombre}} - {{ordinal asignatura.nivel "m"}} año
+                                            <br>
+                                            <span style="text-decoration: underline white;">{{asignatura.nombre}}</span>
+                                        </small>
+                                    </div>
+                                    <a href="#" class="link card-close card-opened-fade-in color-white"
+                                        style="position: absolute; right: 15px; top: 15px">
+                                        <i class="icon f7-icons">close_round_fill</i>
+                                    </a>
+                                </div>
+                                <div class="card-content-padding">
+                                    <img data-src="{{image}}" class="lazy lazy-fade-in demo-lazy">
+                                    <small class="skeleton-effect-fade">
+                                        <i>¡Mira el proyecto, descubre de que trata y dale like!</i>
+                                    </small>
+                                    <p>
+                                        <div class="valign-center"><i class="material-icons">rate_review</i>
+                                            Reseña:
+                                        </div>
+                                        <br>
+                                        {{descripcion}}
+                                    </p>
+                                    <div class="row iconosReq">
+                                        <div class="col-33"><i
+                                                class="material-icons md-48 {{returnOkColor internet}}">wifi</i>
+                                        </div>
+                                        <div class="col-33"><i
+                                                class="material-icons md-48 {{returnOkColor electricidad}}">power</i>
+                                        </div>
+                                        <div class="col-33"><i
+                                                class="material-icons md-48 {{returnOkColor investigacion}}">school</i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="block">
+                                        Categoría: {{categoria.nombre}}
+                                        <br>
+                                        actualizado {{moment createat}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
+        </div>
+    </div>
+</template>
+<script>
+    return {
+        methods: {
+            like: function (proyecto_id) {
+                var apisendLike = function () {
+                    hookapi.Proyectos.likeProyecto(proyecto_id).then(function (res) {
+                        console.log(res);
+                        var success = res.success;
+                        if (success) {
+                            app.methods.notification({ subtitle: '¡Gracias!', text: '¡Tu voto es importante! ¡Recuerda visitar todos los proyectos, si te gusta alguno; ¡Dale like!' });
+                            app.card.close();
+                            app.ptr.get('.ptr-content-home').refresh();
+                            $('.page-content').scrollTop(0, 0);
+                        } else {
+                            app.toast.show({ text: '¡No pude añadir tu like!' });
+                        }
+                    }, function (err) {
+                        app.toast.show({ text: 'Proyectos.likeProyecto error' });
+                    });
+                }
+                console.log(`Intentando like para ${proyecto_id}...`);
+                apisendLike();
+            }
+        },
+        on: {
+            pageInit: function (page) {
+                var self = this;
+
+                app.ptr.create('.ptr-content-home');
+                var $ptrContent = $('.ptr-content-home');
+                // Add 'refresh' listener on it
+                $ptrContent.on('ptr:refresh', function (e) {
+                    console.log(`Recargando lista de proyectos...`);
+                    hookapi.Proyectos.getList().then(function (res) {
+                        var apiProyectos = res.proyectos;
+                        self.$setState({
+                            listaProyectos: apiProyectos,
+                            user: app.data.user,
+                        });
+                        e.detail();
+                        app.toast.show({ text: '¡Lista de proyectos recargada!' });
+                        console.log(`Lista de proyectos recargada!`);
+                    }, function (err) {
+                        app.dialog.alert('Proyectos.getList error', 'Oh... :(');
+                        e.detail();
+                        console.log(err);
+                    });
+                });
+            }
+        }
+    }
+</script>

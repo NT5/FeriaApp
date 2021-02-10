@@ -1,0 +1,148 @@
+<template>
+  <div class="page">
+    <div class="navbar">
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="#" class="link back">
+            <i class="icon icon-back"></i>
+            <span class="if-not-md">Regresar</span>
+          </a>
+        </div>
+        <div class="title">Ingresar</div>
+        <div class="right">
+          <a href="#" class="link" @click="scanQR">
+            <i class="material-icons">camera</i>
+            <span class="if-not-md">QR</span>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="page-content login-screen-content">
+      <div class="login-screen-title">Ingresa un PIN válido</div>
+      <form id="formPIN">
+        <div class="list">
+          <ul>
+            <li class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">PIN</div>
+                <div class="item-input-wrap" id="wrapInput">
+                  <input type="password" placeholder="Ingrese su PIN" id="userpin" class="pin">
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="list">
+          <ul>
+            <li><a href="#" class="col button button-large button-raised button-fill" @click="signIn">Ingresar</a></li>
+          </ul>
+          <div class="block-footer">El número PIN es proporcionado por los administradores de la aplicación móvil</div>
+        </div>
+      </form>
+    </div>
+  </div>
+</template>
+<script>
+  return {
+    methods: {
+      scanQR: function () {
+        window.QRScanner.prepare(function (err, status) {
+          if (err) {
+            app.dialog.alert('QRScanner.prepare error', 'Oh... :(');
+            console.error(err);
+          }
+          if (status.authorized) {
+            // W00t, you have camera access and the scanner is initialized.
+            // QRscanner.show() should feel very fast.
+            $('body').hide();
+            window.QRScanner.scan(function (err, text) {
+              if (err) {
+                $('body').show();
+                // an error occurred, or the scan was canceled (error code `6`)
+              } else {
+                var codepin = text.toString();
+                // The scan completed, display the contents of the QR code:
+                alert(codepin);
+                $('input#userpin').val(codepin);
+                $('body').show();
+                QRScanner.destroy(function (status) {
+                  console.log(status);
+                });
+              }
+            });
+            window.QRScanner.show();
+          } else if (status.denied) {
+            // The video preview will remain black, and scanning is disabled. We can
+            // try to ask the user to change their mind, but we'll have to send them
+            // to their device settings with `QRScanner.openSettings()`.
+            app.dialog.confirm('¿Quieres abrir la configuracion de tu telefono?', 'QR', function () {
+              QRScanner.openSettings();
+            });
+          } else {
+            // we didn't get permission, but we didn't get permanently denied. (On
+            // Android, a denial isn't permanent unless the user checks the "Don't
+            // ask again" box.) We can ask again at the next relevant opportunity.
+            app.toast.show({ text: '¡Aun puedes iniciar con un PIN valido!' });
+          }
+        }); // show the prompt
+      },
+      signIn: function () {
+        var $ = this.$;
+        var app = this.$app;
+        var router = this.$router;
+        var userpin = $('input#userpin').val();
+
+        app.preloader.show();
+        if (userpin !== '') {
+          hookapi.Users.getFromToken(userpin).then(function (res) {
+            console.log(`Comprobando pin: [${userpin}]`);
+            if (typeof res.error !== 'undefined') { // Error en el pin usuario invalido?
+              app.dialog.alert('El PIN es incorrecto', 'Invalido');
+            } else { // PIN correcto se procede a guardar el token
+              console.log(`El PIN ingresado es correcto, registrando token de sesion...`);
+              var user = res.user;
+              // Registrando sesion
+              hookapi.Users.getLogin(userpin).then(function (data) {
+                if (typeof data.error !== 'undefined') { // Error en el registro del token
+                  app.dialog.alert('Ocurrio un error y no se pudo crear tu sesion, intentado de nuevo', 'Error');
+                } else { // Sesion creada correctamente
+                  var loginData = data.login;
+                  var sessionToken = loginData.session_token;
+                  app.data.appDataStore.config.sessionToken = sessionToken;
+                  app.data.user = user;
+                  app.form.storeFormData('feriaApp_config', app.data.appDataStore);
+                  console.log(`Session Token: ${sessionToken}`);
+                  app.dialog.alert(`¡Bienvenido ${user.name}, eres ${hookapi.Users.defineUserType(user.type)} de la Feria UML 2019!, recargaremos el app para que los cambios tengan efecto`, '¡PIN Corecto!', function () {
+                    if (!Framework7.device.desktop) {
+                      app.loginScreen.close();
+                      // navigator.app.clearHistory();
+                      // navigator.app.exitApp();
+                      window.location.reload(true);
+                    } else {
+                      app.methods.loadUser();
+                      router.back({
+                        force: true,
+                        ignoreCache: true
+                      });
+                    }
+                  });
+                }
+                console.log('getLogin', data);
+              }, function (err) {
+                app.dialog.alert('getLogin error', 'Oh... :(');
+                console.log(err);
+              });
+            }
+            console.log('getFromToken', res);
+          }, function (err) {
+            app.dialog.alert('getFromToken', 'Oh... :(');
+            console.log(err);
+          });
+        } else {
+          app.dialog.alert('Escriba un pin', 'No se ingreso PIN');
+        }
+        app.preloader.hide();
+      }
+    }
+  }
+</script>

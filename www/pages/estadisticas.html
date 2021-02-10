@@ -1,0 +1,127 @@
+<template>
+  <div class="page">
+    <div class="navbar">
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="#" class="link back">
+            <i class="icon icon-back"></i>
+            <span class="if-not-md">Back</span>
+          </a>
+        </div>
+        <div class="title">Estadísticas</div>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="block-title" id="tituloEst">PROYECTOS Y TUTORES POR CATEGORÍA</div>
+      <div class="card data-table">
+        <table>
+          <thead>
+            <tr>
+              <th class="label-cell" id="titCate">Categoría</th>
+              <th class="numeric-cell" id="titDatos">Proyecto</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each Categorias}}
+            <tr class="bg-color-teal">
+              <td class="label-cell" id="labelCat">{{@key}}</td>
+              <td class="numeric-cell" id="datoCate">{{this.length}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+      <div class="block-title" id="TituloTotal">TOTALES</div>
+      <div class="card data-table" id="resultStatics">
+        <div class="row" id="datoResult">
+          <div class="col s6" id="totDatos">
+            <i class="f7-icons">book</i>
+            <span>{{Stats.proyectos}}</span>
+          </div>
+          <div class="col s6" id="totDatos">
+            <i class="f7-icons">person</i>
+            <span>{{js "Object.keys(this.ProyectosUsuarios).length"}}</span>
+          </div>
+        </div>
+      </div>
+      <br>
+      <hr>
+      <div id="chart" class="bg-color-gray"></div>
+      <hr>
+      <div class="block-title" id="tituloEst">DETALLE DE PROYECTOS POR CATEGORÍA</div>
+      {{#each Categorias}}
+      <div class="block padding {{randomColorName "bg-color"}}">
+        <div class="block-title" style="text-transform: uppercase; font-weight: bold; color: white;">
+          <i class="icon material-icons">class</i> {{@key}} ({{this.length}})
+        </div>
+        {{#each this}}
+        <div class="card card-outline">
+          <div class="card-header">
+            {{nombre}}
+          </div>
+          <div class="card-content card-content-padding">
+            <span><i class="icon material-icons">school</i> {{carrera.nombre}} - {{ordinal asignatura.nivel "m"}}
+              año</span>
+            <br>
+            <span><i class="icon material-icons">local_library</i> {{asignatura.nombre}}</span>
+          </div>
+          <div class="card-footer">
+            <span><i class="icon material-icons">account_circle</i> {{user.nombre}}</span>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      {{/each}}
+      <br>
+      <hr>
+      <div class="block-title" id="tituloEst">DETALLE DE PROYECTOS POR TUTOR</div>
+      {{#each ProyectosUsuarios}}
+      <div class="block padding {{randomColorName "bg-color"}}">
+        <div class="block-title" style="text-transform: uppercase; font-weight: bold; color: white;">
+          <i class="icon material-icons">class</i> {{@key}} ({{this.length}})
+        </div>
+        {{#each this}}
+        <div class="card card-outline">
+          <div class="card-content card-content-padding">
+            <span><i class="icon material-icons">school</i> {{this}}</span>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      {{/each}}
+    </div>
+  </div>
+  </div>
+</template>
+<script>
+  return {
+    data: function () {
+      return {
+      }
+    },
+    on: {
+      pageInit: function (page) {
+        var context = page.detail.route.context;
+
+        var Categorias = context.Categorias;
+        dataColums = [];
+        for (key in Categorias) {
+          dataColums.push([key, Categorias[key].length]);
+        }
+
+        var chart = c3.generate({
+          data: {
+            columns: dataColums,
+            type: 'donut'
+          },
+          legend: {
+            position: 'bottom'
+          },
+          donut: {
+            title: "Categorias"
+          }
+        });
+      }
+    }
+  }
+</script>

@@ -1,0 +1,247 @@
+<template>
+    <div class="page">
+        <div class="navbar">
+            <div class="navbar-inner sliding">
+                <div class="left">
+                    <a href="#" class="link back">
+                        <i class="icon icon-back"></i>
+                        <span class="if-not-md">Back</span>
+                    </a>
+                </div>
+                <div class="title">Resultados</div>
+                <div class="right">
+                    {{#js_if "this.user.type === this.userEnum.JURADO && this.user.categoria"}}
+                    {{#with user.categoria}}
+                    <a href="/proyectos/{{id}}/{{nombre}}" class="link">
+                        <i class="material-icons">flag</i>
+                    </a>
+                    {{/with}}
+                    {{/js_if}}
+                </div>
+            </div>
+        </div>
+        {{#js_if "this.user.type === this.userEnum.ADMIN"}}
+        <div class="fab fab-right-bottom">
+            <a href="#">
+                <i class="material-icons">launch</i>
+                <i class="material-icons">hourglass_full</i>
+            </a>
+            <div class="fab-buttons fab-buttons-top">
+                <a href="#" class="fab-label-button" @click="releaseVotacion(true);">
+                    <span><i class="material-icons">sync</i></span>
+                    <span class="fab-label">Publico</span>
+                </a>
+                <a href="#" class="fab-label-button" @click="releaseVotacion(false);">
+                    <span><i class=" material-icons">sync_disabled</i></span>
+                    <span class="fab-label">Privado</span>
+                </a>
+            </div>
+        </div>
+        {{/js_if}}
+        <div class="page-content ptr-content">
+            <div class="ptr-preloader">
+                <div class="preloader"></div>
+                <div class="ptr-arrow"></div>
+            </div>
+            {{#js_if "this.votacionState.release === true || this.user.type === this.userEnum.JURADO || this.user.type === this.userEnum.ADMIN"}}
+            {{#each resultados}}
+            <div class="card">
+                <div class="card-header bg-color-teal text-color-white">
+                    <h2>{{@key}}</h2>
+                </div>
+                <div class="card-content">
+                    {{#each this}}
+                    {{#js_if "this.position <= 3"}}
+                    <div class="card fondoCard">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-80 datoProy">
+                                    {{@key}}
+                                </div>
+                            </div>
+                            <div class="row float-right">
+                                <div class="col-20">
+                                    <div class="sprite sprite-{{position}}">
+                                        <span
+                                            class="badge color-purple">{{js "Number((this.total / this.votos).toPrecision(4))"}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {{#js_if "@root.user.type === @root.userEnum.JURADO || @root.user.type === @root.userEnum.ADMIN"}}
+                        <div class="card-content padding">
+                            <div class="row no-gap">
+                                <div class="col">
+                                    DOC:
+                                    <span
+                                        class="badge color-teal">{{js "Number((this.documento / this.votos).toPrecision(4))"}}</span>
+                                </div>
+                                <div class="col">
+                                    PERT.
+                                    <span
+                                        class="badge color-teal">{{js "Number((this.pertinencia / this.votos).toPrecision(4))"}}</span>
+                                </div>
+                                <div class="col">
+                                    CRE.
+                                    <span
+                                        class="badge color-teal">{{js "Number((this.creatividadIn / this.votos).toPrecision(4))"}}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {{/js_if}}
+                        <div class="card-footer datoProy">
+                            {{#with this.proyecto}}
+                            {{user.nombre}}
+                            <br>
+                            {{carrera.nombre}} - {{ordinal asignatura.nivel "m"}} año
+                            {{/with}}
+                        </div>
+                    </div>
+                    {{/js_if}}
+                    {{/each}}
+                </div>
+                <br>
+                <br>
+                <br>
+            </div>
+            {{else}}
+            <div class="card text-align-center">
+                <div class="card-header">
+                    <h3>Aún no se registran votaciones...</h3>
+                </div>
+                <div class="card-content card-content-padding">
+                    <a href="#" @click="clicker" class="link">
+                        <i class="material-icons md-48">access_time</i>
+                    </a>
+                </div>
+                <div class="card-footer">
+                    <i>¡Puedes actualizar esta página deslizando hacia abajo!</i>
+                </div>
+            </div>
+            {{/each}}
+            <hr>
+            {{else}}
+            <div class="card text-align-center">
+                <div class="card-header">
+                    <h3>Aún estamos votando...</h3>
+                </div>
+                <div class="card-content card-content-padding">
+                    <a href="#" @click="clicker" class="link">
+                        <i class="material-icons md-48">access_time</i>
+                    </a>
+                </div>
+                <div class="card-footer">
+                    <i>¡Puedes actualizar esta página deslizando hacia abajo!</i>
+                </div>
+            </div>
+            <br><br>
+            <div class="row">
+                <div class="col"></div>
+                <div class="col">
+                    <h1 class="text-align-center hide" id="minicounter">0</h1>
+                </div>
+                <div class="col"></div>
+            </div>
+            {{/js_if}}
+        </div>
+    </div>
+</template>
+<style>
+    .hide {
+        display: none;
+    }
+</style>
+<script>
+    return {
+        methods: {
+            releaseVotacion: function (action) {
+                hookapi.Votacion.setState({ state: action }).then(function (res) {
+                    app.methods.notification({
+                        subtitle: 'Votación',
+                        text: 'La visibilidad ahora es ' + (action ? "publica" : "privada")
+                    });
+                }, function (err) {
+                    app.dialog.alert('Votacion.setState error', 'Oh... :(');
+                    console.log(err);
+                });
+            },
+            clicker: function (item) {
+                var area = $('#minicounter');
+
+                var value = parseInt(area.text());
+                value += 1;
+                if ((value % 10) == 0) {
+                    if (area.hasClass('hide')) {
+                        area.removeClass('hide');
+                    }
+                    navigator.vibrate([1000, 1000]);
+                }
+                switch (value) {
+                    case 100:
+                        app.methods.notification({
+                            subtitle: '?¿',
+                            text: 'Creo que tienes mucho tiempo libre.'
+                        });
+                        break;
+                    case 500:
+                        app.methods.notification({
+                            subtitle: 'Tienes mis respetos',
+                            text: 'No, de verdad tienes mucho tiempo libre.'
+                        });
+                        break;
+                    case 10000:
+                        app.methods.notification({
+                            subtitle: '¡Ganaste un premio!',
+                            text: '¡Adelante, adelante reclama tu premio!'
+                        });
+                        break;
+                    case 10001:
+                        app.dialog.alert("¡De verdad no hay nada mas!", "?¿", function () {
+                            navigator.app.clearHistory();
+                            navigator.app.exitApp();
+                        });
+                        break;
+                }
+                area.text(value);
+            }
+        },
+        on: {
+            pageInit: function (page) {
+                var self = this;
+
+                var $ptrContent = $('.ptr-content');
+                // Add 'refresh' listener on it
+                $ptrContent.on('ptr:refresh', function (e) {
+                    console.log(`Recargando lista de proyectos...`);
+                    hookapi.Votacion.getResultado().then(function (res) {
+                        hookapi.Votacion.getState().then(function (state) {
+                            self.$setState({
+                                resultados: res.resultados,
+                                votaciones: res.votaciones,
+                                votacionState: state.votacion,
+                            });
+                            e.detail();
+                            if (state.votacion.release === true) {
+                                confetti.toggle();
+                                setTimeout(function () {
+                                    confetti.toggle();
+                                }, 1500);
+                            }
+                            // app.ptr.done(); // or e.detail();
+                            app.toast.show({ text: '¡Resultados recargados!' });
+                            console.log(`Lista de proyectos recargada!`);
+                        }, function (err) {
+                            app.dialog.alert('Votacion.getState error', 'Oh... :(');
+                            e.detail();
+                            console.log(err);
+                        });
+                    }, function (err) {
+                        app.dialog.alert('Votacion.getResultado error', 'Oh... :(');
+                        e.detail();
+                        console.log(err);
+                    });
+                });
+            }
+        }
+    }
+</script>

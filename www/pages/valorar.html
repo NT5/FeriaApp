@@ -1,0 +1,87 @@
+<template>
+  <div class="page">
+    <div class="navbar">
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="#" class="link back">
+            <i class="icon icon-back"></i>
+            <span class="if-not-md">Back</span>
+          </a>
+        </div>
+        <div class="title">Valorar la App</div>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="block block-strong text-align-center">
+        <h1>¡Hola! Gracias por usar esta App en la Feria UML 2019</h1>
+        <h2>Queremos <i class="material-icons text-color-red">favorite</i> tu opinión</h2>
+        <div class="block-title">¿Cómo valoras esta aplicación?</div>
+        <div class="block block-strong">
+          <div id="rater"></div>
+          <span class="live-rating"></span>
+        </div>
+      </div>
+      <br>
+      <button class="col button button-large button-fill color-green" @click="ValorarApp">
+        <div class="valign-center">
+          <i class="material-icons">grade</i>
+          Valorar
+        </div>
+      </button>
+    </div>
+  </div>
+</template>
+<script>
+  return {
+    data: function () {
+      return {
+        rating: 0
+      }
+    },
+    methods: {
+      ValorarApp: function () {
+        var self = this;
+        var score = self.rating;
+        var router = this.$router;
+
+        hookapi.Valoraciones.registreValoracion({ score: score }).then(function (res) {
+          console.log(res);
+
+          app.data.appDataStore.config.valorar = true;
+          app.form.storeFormData('feriaApp_config', app.data.appDataStore);
+          router.back();
+          confetti.toggle();
+          setTimeout(function () {
+            confetti.toggle();
+          }, 1500);
+          app.dialog.alert('Tu valoración es muy importante, ¡Muchas gracias!', '¡Gracias!');
+        }, function (err) {
+          app.dialog.alert('Valoraciones.registreValoracion error', 'Oh... :(');
+          console.log(err);
+        });
+      }
+    },
+    on: {
+      pageInit: function () {
+        var self = this;
+
+        var starRating1 = raterJs({
+          starSize: 32,
+          step: 0.5,
+          element: document.querySelector("#rater"),
+          rateCallback: function rateCallback(rating, done) {
+            this.setRating(rating);
+            self.rating = rating;
+            done();
+          },
+          onHover: function (currentIndex, currentRating) {
+            document.querySelector('.live-rating').textContent = currentIndex;
+          },
+          onLeave: function (currentIndex, currentRating) {
+            document.querySelector('.live-rating').textContent = currentRating;
+          }
+        });
+      }
+    }
+  }
+</script>

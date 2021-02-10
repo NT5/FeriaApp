@@ -1,0 +1,278 @@
+<template>
+  <div class="page">
+    <div class="navbar">
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="#" class="link back" data-ignore-cache="true" data-force="true">
+            <i class="icon icon-back"></i>
+            <span class="if-not-md">Back</span>
+          </a>
+        </div>
+        <div class="title">Datos de Proyectos</div>
+      </div>
+    </div>
+    <div class="page-content">
+      <form id="frmAddProyecto">
+        <div class="block-title">
+          <h3 id="tituloNormativa">INGRESA LOS DATOS <br>DE TU PROYECTO</h3>
+        </div>
+        <div class="list no-hairlines-md" id="contProy">
+          <ul>
+            <li class="item-content item-input" id="contDatos">
+              <div class="item-inner">
+                <div class="item-title item-label">Nombre del Proyecto</div>
+                <div class="item-input-wrap">
+                  <input type="text" id="nameProyecto" placeholder="Escribe el nombre de tu proyecto" required validate>
+                  <span class="input-clear-button"></span>
+                </div>
+              </div>
+            </li>
+            <li class="item-content item-input" id="contDatos">
+              <div class="item-inner">
+                <div class="item-title item-label">Breve Reseña del Proyecto</div>
+                <div class="item-input-wrap">
+                  <textarea id="breveResena" required validate
+                    placeholder="Escribe una breve reseña de tu proyecto"></textarea>
+                </div>
+              </div>
+            </li>
+            <li class="item-content item-input" id="contDatosCarrera">
+              <div class="item-inner">
+                <div class="item-title item-label">Carrera Asociada al Proyecto</div>
+                <div class="item-input-wrap input-dropdown-wrap">
+                  <select required validate placeholder="Selecciona la carrera" id="SelectCarr">
+                    <option value="" selected disabled>Selecciona una Carrera</option>
+                    <option disabled>Cargando carreras...</option>
+                    </script>
+                  </select>
+                </div>
+              </div>
+            </li>
+            <li class="item-content item-input" style="display: none;" id="contDatosCarreraNivel">
+              <div class="item-inner">
+                <div class="item-title item-label">Nivel de la Carrera</div>
+                <div class="item-input-wrap input-dropdown-wrap">
+                  <select required validate placeholder="Selecciona una año" id="SelectNivelCarr">
+                    <option value="" selected disabled>Selecciona un Nivel</option>
+                    {{#each niveles}}
+                    <option value="{{js "this.@index + 1"}}">{{this}}</option>
+                    {{/each}}
+                  </select>
+                </div>
+              </div>
+            </li>
+            <li class="item-content item-input" style="display: none;" id="contDatosAsignatura">
+              <div class="item-inner">
+                <div class="item-title item-label">Asignatura Asociada el Proyecto</div>
+                <div class="item-input-wrap input-dropdown-wrap">
+                  <select required validate placeholder="Selecciona una asignatura" id="SelectAsignatura">
+                    <option value="" selected disabled>Selecciona una Asignatura</option>
+                    <option disabled>Cargando Asignaturas...</option>
+                  </select>
+                </div>
+              </div>
+            </li>
+            <li class="item-content item-input" id="contDatos">
+              <div class="item-inner">
+                <div class="item-title item-label">Requerimientos del Proyecto</div>
+                <div class="list">
+                  <ul>
+                    <li>
+                      <div class="item-content">
+                        <span>¿Necesita Internet?</span>
+                        <label class="toggle toggle-init">
+                          <input type="checkbox" id="chkInternet">
+                          <span class="toggle-icon"></span>
+                        </label>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="item-content">
+                        <span>¿Necesita Electricidad?</span>
+                        <label class="toggle toggle-init">
+                          <input type="checkbox" id="chkElec">
+                          <span class="toggle-icon"></span>
+                        </label>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="item-content">
+                        <span>¿Es Investigación?</span>
+                        <label class="toggle toggle-init">
+                          <input type="checkbox" id="chkInvest">
+                          <span class="toggle-icon"></span>
+                        </label>
+                      </div>
+                    </li>
+
+                  </ul>
+                </div>
+              </div>
+            </li>
+        </div>
+        </ul>
+        <div class="list">
+          <ul>
+            <li>
+              <a href="#" @click="saveProyecto" class="col button button-large button-raised button-fill">
+                Guardar Proyecto
+              </a>
+            </li>
+          </ul>
+        </div>
+      </form>
+    </div>
+  </div>
+</template>
+<script>
+
+
+  function loadCarreras() {
+    var selectItem = $('select#SelectCarr');
+    var template = '<option value="" selected disabled>Selecciona una Carrera</option>'
+      + '{{#each carrerasList}}'
+      + '<option value="{{id}}">{{nombre}}</option>'
+      + '{{/each}}';
+    var compiledSelectCarrerasTemplate = Template7.compile(template);
+    console.log('Cargando carreras desde el API...');
+    hookapi.Carreras.getList().then(function (data) {
+      var apiCarreras = data.carreras;
+      var html = compiledSelectCarrerasTemplate({
+        carrerasList: apiCarreras
+      });
+      selectItem.html(html);
+      console.log(`[${apiCarreras.length}] Carreras cargadas!`);
+    });
+  }
+
+  function loadAsignaturas(_carrera_id, _carrera_nivel) {
+    console.log(`Cargando asignaturas de carrera id ${_carrera_id} nivel: ${_carrera_nivel}...`);
+
+    var selectItem = $('select#SelectAsignatura');
+    var template = '<option value="" selected disabled>Selecciona una Asignatura</option>'
+      + '{{#each asignaturaList}}'
+      + '<option value="{{id}}">{{nombre}}</option>'
+      + '{{/each}}';
+    var compiledSelectAsigTemplate = Template7.compile(template);
+
+    hookapi.Asignaturas.getFromCarreraNivel(_carrera_id, _carrera_nivel).then(function (data) {
+      var apiAsignaturas = data.asignaturas;
+      var html = compiledSelectAsigTemplate({
+        asignaturaList: apiAsignaturas
+      });
+      selectItem.html(html);
+      console.log(`[${apiAsignaturas.length}] Asignaturas cargadas!`);
+    });
+
+  }
+
+  return {
+    data: function () {
+      return {
+        niveles: ["1er Año", "2er Año", "3er Año", "4to Año", "5to Año"],
+        user: app.data.user,
+      }
+    },
+    on: {
+      pageInit: function (page) {
+        // console.log(page);
+        var IdCat = page.detail.route.params.idcat;
+        console.log('init addproyecto');
+        console.log(`El id de la categoria es ${IdCat}`);
+        var categoriaNombre = hookapi.Categorias.getFromId(IdCat);
+        categoriaNombre.then(function (r) {
+          var cat = r.categoria;
+          console.log(`El nombre de la categoria es: ${cat.nombre} y su id es ${cat.id}`);
+        });
+
+        // Cargando carreras
+        loadCarreras();
+
+        $('select#SelectCarr').change(function () {
+          $('li.item-content#contDatosCarreraNivel').show();
+
+          var selectedVal = $(this).val();
+          console.log(`Seleccionado la carrera id: ${selectedVal}`);
+          if ($('select#SelectNivelCarr').val() !== 'Selecciona un Nivel') {
+            loadAsignaturas(selectedVal, $('select#SelectNivelCarr').val());
+          }
+        });
+
+        $('select#SelectNivelCarr').change(function () {
+          $('li.item-content#contDatosAsignatura').show();
+          var selectedVal = $(this).val();
+          var CarreraId = $('select#SelectCarr').val();
+          console.log(`Seleccionado el nivel id: ${selectedVal}`);
+          loadAsignaturas(CarreraId, selectedVal);
+        });
+
+      },
+    },
+    methods: {
+      saveProyecto: function (page) {
+        var user = app.data.user;
+        var router = this.$router;
+        var idCategoria = parseInt(this.$route.params.idcat) || 0;
+
+        app.input.validateInputs('form#frmAddProyecto');
+
+        var getSelectorValue = function (_selectorId) {
+          return ($('select#' + _selectorId) ? parseInt($('select#' + _selectorId).val()) || 0 : 0);
+        }
+        var getToggleValue = function (_toggleId) {
+          return ($('input#' + _toggleId).prop('checked') === true ? 1 : 0);
+        }
+
+        var nombreProy = $('input#nameProyecto').val() || false;
+        var resena = $('textarea#breveResena').val() || false;
+        var selCarr = getSelectorValue('SelectCarr');
+        var selAsignatura = getSelectorValue('SelectAsignatura');
+        var Internet = getToggleValue('chkInternet');
+        var Electricidad = getToggleValue('chkElec');
+        var Investigacion = getToggleValue('chkInvest');
+
+        console.table({
+          idCategoria,
+          nombreProy,
+          resena,
+          selCarr,
+          selAsignatura,
+          Internet,
+          Electricidad,
+          Investigacion
+        });
+
+        if (!nombreProy || !resena | !selCarr || !selAsignatura) {
+          app.dialog.alert(`¡${user.name}, completa todos los campos del formulario antes de enviarlo!`, '¡Formulario incompleto!');
+        } else {
+          hookapi.Proyectos.registreProyecto({
+            nombreProyecto: nombreProy,
+            descripcionProyecto: resena,
+            requiereInternet: Internet,
+            requiereElectricidad: Electricidad,
+            esInvestigacion: Investigacion,
+            idCarrera: selCarr,
+            idAsignatura: selAsignatura,
+            idCategoria: idCategoria
+          }).then(function (res) {
+            console.log(res);
+            if (!res.error) {
+              app.dialog.alert(`¡${user.name}, Registraste correctamente tu proyecto ${nombreProy}!`, '¡Registro completo!', function () {
+                router.back({
+                  force: true,
+                  ignoreCache: true
+                });
+              });
+            } else {
+              error = res.error;
+              app.dialog.alert(`¡No se pudo registrar tu proyecto\r\n! Code: ${error.code} ${error.message}`, '¡Registro erroneo!');
+            }
+          }, function (err) {
+            app.dialog.alert('registreProyecto', 'Oh... :(');
+            console.log(err);
+          });
+        }
+      }//saveProyecto
+    }//Methods
+  }/* Return */
+</script>

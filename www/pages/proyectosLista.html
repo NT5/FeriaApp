@@ -1,0 +1,219 @@
+<template>
+  <div class="page">
+    <div class="navbar">
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="#" class="link back">
+            <i class="icon icon-back"></i>
+            <span class="if-not-md">Back</span>
+          </a>
+        </div>
+        <div class="title">Proyectos</div>
+        <div class="right">
+          {{#js_if "@root.user.type == @root.userEnum.JURADO"}}
+          {{#js_if "@root.user.categoria.id == @root.CategoriaId"}}
+          <a class="icon-only padding-half">
+            <i class="material-icons">flag</i>
+            <span class="badge color-red">
+              {{misVotaciones.length}}/{{Proyectos.length}}
+          </a>
+          </span>
+          {{/js_if}}
+          {{/js_if}}
+        </div>
+      </div>
+    </div>
+    <div class="toolbar tabbar toolbar-bottom">
+      <div class="toolbar-inner">
+        {{#js_if "this.user.type == this.userEnum.TUTOR || this.user.type == this.userEnum.ADMIN"}}
+        <a href="#tab-1" class="tab-link tab-link-active">
+          <i class="icon material-icons">bookmarks<span class="badge color-green">{{misProyectos.length}}</span></i>
+          <span class="tabbar-label">Mis Proyectos</span>
+        </a>
+        {{/js_if}}
+        <a href="#tab-2" class="tab-link">
+          <i class="icon material-icons md-only">today<span class="badge color-green">{{Proyectos.length}}</span></i>
+          <span class="tabbar-label">Proyectos</span>
+        </a>
+      </div>
+    </div>
+    {{#js_if "this.user.type == this.userEnum.TUTOR || this.user.type == this.userEnum.ADMIN"}}
+    <div class="fab fab-extended fab-center-bottom color-red" data-morph-to=".toolbar">
+      <a href="/addProyectos/{{$route.params.idcat}}/">
+        <i class="icon material-icons">add</i>
+        <div class="fab-text">Añadir</div>
+      </a>
+    </div>
+    {{/js_if}}
+    <div class="tabs-swipeable-wrap">
+      <div class="tabs">
+        {{#js_if "this.user.type == this.userEnum.TUTOR || this.user.type == this.userEnum.ADMIN"}}
+        <div id="tab-1" class="page-content tab tab-active">
+          <div class="block">
+            <div class="block-title">
+              <i class="icon material-icons">class</i> {{Categoria}}
+            </div>
+          </div>
+          {{#each misProyectos}}
+          <div class="card demo-facebook-card">
+            <div class="card-header">
+              <div class="demo-facebook-avatar letraCap {{randomColorName "bg-color"}}">
+                <span>{{capitalLetter nombre}}</span>
+              </div>
+              <div class="demo-facebook-name">{{nombre}}</div>
+              <div class="demo-facebook-date">actualizado {{moment createat}}</div>
+              <br>
+            </div>
+            <div class="card-content card-content-padding">
+              {{descripcion}}
+            </div>
+            <div class="card-footer">
+              <a href="/updateProyecto/{{id}}/" class="link">
+                <i class="material-icons">edit</i> Editar
+              </a>
+              <a href="#" class="link" @click="Eliminar({{id}})">
+                <i class="material-icons">delete_forever</i> Borrar
+              </a>
+            </div>
+          </div>
+          {{else}}
+          <div class="card demo-facebook-card">
+            <div class="card-header">
+              <div class="demo-facebook-avatar letraCap {{randomColorName "bg-color"}}">
+                <span>{{capitalLetter "S"}}</span>
+              </div>
+              <div class="demo-facebook-name">Sin proyectos</div>
+              <div class="demo-facebook-date">Puedes crear uno aqui</div>
+              <br>
+            </div>
+            <div class="card-content card-content-padding">
+              Parace que aun no registras ningun proyecto para esta categoria...
+              <br>
+              ¡Puedes ingresar uno ahora mismo!
+            </div>
+          </div>
+          {{/each}}
+        </div> <!-- Fin tab1 -->
+        {{/js_if}}
+        <div id="tab-2" class="page-content tab">
+          <div class="block">
+            <div class="block-title">
+              <i class="icon material-icons">class</i> {{Categoria}}
+            </div>
+            {{#each Proyectos}}
+            <div class="card demo-facebook-card">
+              <div class="card-header">
+                <div class="demo-facebook-avatar letraCap {{randomColorName "bg-color"}}">
+                  <span>{{js "@index + 1"}}</span>
+                </div>
+                <div class="demo-facebook-name">{{nombre}}</div>
+                <div class="demo-facebook-date">actualizado {{moment createat}}</div>
+                <br>
+              </div>
+              <div class="card-content card-content-padding">
+                {{descripcion}}
+              </div>
+              <div class="card-footer">
+                <small>
+                  <a href="#" class="link icon-only">
+                    <i class="material-icons">person</i> {{user.nombre}}
+                  </a>
+                </small>
+                {{#js_if "@root.user.type == @root.userEnum.ADMIN"}}
+                <a href="/updateProyecto/{{id}}/" class="link">
+                  <i class="material-icons">edit</i>
+                </a>
+                <a href="#" class="link" @click="Eliminar({{id}})">
+                  <i class="material-icons">delete_forever</i>
+                </a>
+                {{/js_if}}
+                {{#js_if "@root.user.type == @root.userEnum.JURADO"}}
+                {{#js_if "@root.user.categoria.id == @root.CategoriaId"}}
+                <a href="/votar/{{id}}" data-proyectoId="{{id}}"
+                  class="button button-raised button-small button-fill text-color-white {{#js_includes @root.misVotosIds id}}bg-color-green{{else}}bg-color-red{{/js_includes}}">
+                  <div class="valign-center">
+                    <i class="material-icons">flag</i> Votar
+                  </div>
+                </a>
+                <span
+                  class="badge color-teal">{{#find @root.misVotaciones 'id_proyecto' id}}{{this.total}}{{else}}0{{/find}}</span>
+                {{/js_if}}
+                {{/js_if}}
+              </div>
+            </div>
+            {{else}}
+            <div class="card demo-facebook-card">
+              <div class="card-header">
+                <div class="demo-facebook-avatar letraCap {{randomColorName "bg-color"}}">
+                  <span>{{capitalLetter "S"}}</span>
+                </div>
+                <div class="demo-facebook-name">Sin proyectos</div>
+                <div class="demo-facebook-date">Puedes crear uno aqui</div>
+                <br>
+              </div>
+              <div class="card-content card-content-padding">
+                Parace que aun no se registra ningun proyecto para esta categoria...
+              </div>
+            </div>
+            {{/each}}
+          </div>
+          <br>
+          <br>
+        </div><!-- Fin tab2 -->
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+  return {
+    data: function () {
+      return {
+      }
+    },
+    on: {
+      pageInit: function (page) {
+        var self = this;
+        if (self.user.categoria && self.user.categoria.id != self.CategoriaId) {
+          var notificationWithButton = app.notification.create({
+            title: 'Feria 2019',
+            subtitle: 'Jurado',
+            text: `¡Puedes ver los proyectos de esta categoria pero, no puedes votar aqui!, tu categoria es: ${self.user.categoria.nombre}`,
+            closeButton: true,
+            closeOnClick: true,
+            closeTimeout: 5000,
+          });
+          notificationWithButton.open();
+        }
+      },
+    },
+    methods: {
+      Eliminar: function (id) {
+        var proyectoId = id;
+        console.log(`Intentando borrara proyecto id... ${proyectoId}`);
+
+        app.dialog.confirm('¿Estas seguro de que quieres borrar este proyecto?', 'Borrar proyecto', function () {
+          app.dialog.confirm('¿De verdad estas seguro?, esta accion no se puede revertir; se perderan todos los votos asignados.', 'Confirmar', function () {
+            hookapi.Proyectos.removeFromId({
+              id: proyectoId
+            }).then(function (res) {
+              console.log(res);
+              var notificationWithButton = app.notification.create({
+                title: 'Feria 2019',
+                subtitle: 'Borraste el proyecto',
+                text: `¡Proyecto borrado correctamente!`,
+                closeButton: true,
+                closeOnClick: true,
+                closeTimeout: 5000,
+              });
+              notificationWithButton.open();
+              app.view.current.router.refreshPage();
+            }, function (err) {
+              app.dialog.alert('Proyectos.removeFromId', 'Oh... :(');
+              console.log(err);
+            });
+          });
+        });
+      }
+    }
+  }
+</script>

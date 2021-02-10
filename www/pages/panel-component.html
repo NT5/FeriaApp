@@ -1,0 +1,206 @@
+<template>
+    <div class="panel panel-left panel-cover panel-resizable">
+        <div class="view panel-view view-init">
+            <div class="page">
+                <div class="page-content">
+                    <div class="block-title"></div>
+                    <div class="logoUML">
+                        <a href="#"><img src="img/logouml.webp" alt="LogoUML"></a>
+                    </div>
+                    {{#js_if "this.user.type == 0"}}
+                    <div id="logoUser">
+                        <a href="/pin/" class="panel-close"><i class="f7-icons">person_round_fill</i><br>
+                            <h3>Ingresar</h3>
+                        </a>
+                    </div>
+                    {{else}}
+                    <div class="card card-outline">
+                        <div class="card-content">
+                            <div class="list media-list">
+                                <ul>
+                                    <li class="item-content">
+                                        <div class="item-media">
+                                            <div id="logoUser">
+                                                <a href="#" class="panel-close">
+                                                    <i class="f7-icons">person_round_fill</i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="item-inner">
+                                            <div class="item-title-row">
+                                                <div class="item-title">{{js "this.user.name.split(' ')[1]"}}</div>
+                                            </div>
+                                            <div class="item-subtitle">{{user.phone}}</div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="valign-center">
+                                <i class="material-icons md-24">bookmark</i> {{defineUserType user.type}}
+                            </div>
+                            <a href="/pin/" class="panel-close">
+                                <div class="valign-center">
+                                    <i class="material-icons md-24">fingerprint</i> PIN
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    {{/js_if}}
+
+                    <div class="popover popover-menu">
+                        <div class="popover-angle"></div>
+                        <div class="popover-inner">
+                            <div class="list">
+                                <ul id="popoverside-menu">
+                                    {{#each listaCategorias}}
+                                    <li>
+                                        <a href="/proyectos/{{id}}/{{nombre}}"
+                                            class="list-button popover-close panel-close">{{nombre}}</a>
+                                    </li>
+                                    {{/each}}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="list">
+                        <ul>
+                            <li>
+                                <a href="#" class="item-link item-content popover-open" data-popover=".popover-menu">
+                                    <div class="item-media"><i class="material-icons">bookmarks</i></div>
+                                    <div class="item-inner">
+                                        <div class="item-title">Proyectos</div>
+                                    </div>
+                                </a>
+                            </li>
+                            {{#each itemList}}
+                            <li>
+                                {{#js_if "this.usertype == 0"}}
+                                <a href="{{url}}" class="item-link item-content panel-close">
+                                    <div class="item-media"><i class="material-icons">{{icon}}</i></div>
+                                    <div class="item-inner">
+                                        <div class="item-title">{{name}}</div>
+                                    </div>
+                                </a>
+                                {{else}}
+                                {{#js_if "this.usertype == @root.user.type"}}
+                                <a href="{{url}}" class="item-link item-content panel-close">
+                                    <div class="item-media"><i class="material-icons">{{icon}}</i></div>
+                                    <div class="item-inner">
+                                        <div class="item-title">{{name}}</div>
+                                    </div>
+                                </a>
+                                {{/js_if}}
+                                {{/js_if}}
+                            </li>
+                            {{/each}}
+                            <li>
+                                <a href="/newIdea/" class="item-link item-content panel-close">
+                                    <div class="item-media">
+                                        <i class="material-icons" id="iconoIdea">lightbulb_outline</i>
+                                    </div>
+                                    <div class="item-inner">
+                                        <div class="item-title" id="tituloIdea">¿Una Nueva Idea?</div>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="list simple-list">
+                        <ul>
+                            <li>
+                                <span>Modo oscuro</span>
+                                <label class="toggle toggle-init color-black">
+                                    <input type="checkbox" id="enableblackmode">
+                                    <span class="toggle-icon"></span>
+                                </label>
+                            </li>
+                            {{#js_if "app.data.appDataStore.config.valorar !== true"}}
+                            <li>
+                                <a href="/valorar/" class="item-link item-content panel-close">
+                                    <div class="item-media">
+                                        <i class="material-icons text-color-red">favorite</i>
+                                    </div>
+                                    <div class="item-inner">
+                                        <div class="item-title text-color-green"><strong>¡Valora la App!</strong></div>
+                                    </div>
+                                </a>
+                            </li>
+                            {{/js_if}}
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+<script>
+    return {
+        data: function () {
+            return {
+                itemList: [
+                    {
+                        url: '/mapa/',
+                        icon: 'map',
+                        usertype: 0,
+                        name: 'Mapa de la Feria'
+                    },
+                    {
+                        url: '/jurado/',
+                        icon: 'supervisor_account',
+                        usertype: 0,
+                        name: 'Jurados'
+                    },
+                    /*
+                    {
+                        url: '#',
+                        usertype: 1,
+                        icon: 'next_week',
+                        name: 'Mis Votaciones'
+                    },
+                    */
+                    {
+                        url: '/resultados/',
+                        usertype: 0,
+                        icon: 'av_timer',
+                        name: 'Resultados'
+                    },
+                    {
+                        url: '/normativa/',
+                        icon: 'thumbs_up_down',
+                        usertype: 0,
+                        name: 'Normativa'
+                    },
+                    {
+                        url: '/estadistica/',
+                        icon: 'trending_up',
+                        usertype: 0,
+                        name: 'Estadísticas'
+                    },
+                    {
+                        url: '/notificar/',
+                        icon: 'add_alert',
+                        usertype: 3,
+                        name: 'Notificar'
+                    },
+                    {
+                        url: '/newuser/',
+                        icon: 'person_add',
+                        usertype: 3,
+                        name: 'Añadir usuario'
+                    },
+                    {
+                        url: '/userlist/',
+                        icon: 'people',
+                        usertype: 3,
+                        name: 'Lista de usuarios'
+                    }
+                ]
+            }
+        }
+    }
+</script>
