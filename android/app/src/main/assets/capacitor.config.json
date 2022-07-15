@@ -1,0 +1,13 @@
+{
+	"appId": "pw.nt5.feriaapp",
+	"appName": "Feria UML",
+	"bundledWebRuntime": false,
+	"npmClient": "npm",
+	"webDir": "www",
+	"plugins": {
+		"SplashScreen": {
+			"launchShowDuration": 0
+		}
+	},
+	"cordova": {}
+}

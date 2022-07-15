@@ -17,10 +17,16 @@ export default {
   build: {
     outDir: BUILD_DIR,
     assetsInlineLimit: 0,
+    chunkSizeWarningLimit: 800,
     emptyOutDir: true,
-    rollupOptions: {
-      treeshake: false,
-    },
+    manifest: true,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        passes: 1
+      }
+    }
   },
   resolve: {
     alias: {
@@ -28,7 +34,8 @@ export default {
     },
   },
   server: {
-    host: true,
+    host: '0.0.0.0',
+    port: '80'
   },
   esbuild: {
     jsxFactory: '$jsx',

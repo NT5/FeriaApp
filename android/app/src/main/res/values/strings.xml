@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Feria UML</string>
+    <string name="title_activity_main">Feria UML</string>
+    <string name="package_name">pw.nt5.feriaapp</string>
+    <string name="custom_url_scheme">pw.nt5.feriaapp</string>
+</resources>
